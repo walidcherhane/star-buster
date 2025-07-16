@@ -62,31 +62,10 @@ export async function generateMetadata({
   };
 
   const suspicionLevel = getSuspicionLevel(result.analysis.suspicionScore);
-  const baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
 
   return {
     title: `${result.repository.full_name} - StarBuster Analysis`,
     description: `Suspicion Score: ${result.analysis.suspicionScore}/100 | ${suspicionLevel}`,
-    openGraph: {
-      title: `${result.repository.full_name} - StarBuster Analysis`,
-      description: `Suspicion Score: ${result.analysis.suspicionScore}/100 | ${suspicionLevel}`,
-      url: `${baseUrl}/results/${result.id}`,
-      type: "website",
-      images: [
-        {
-          url: `${baseUrl}/results/${result.id}/opengraph-image`,
-          width: 1200,
-          height: 630,
-          alt: `${result.repository.full_name} analysis results`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${result.repository.full_name} - StarBuster Analysis`,
-      description: `Suspicion Score: ${result.analysis.suspicionScore}/100 | ${suspicionLevel}`,
-      images: [`${baseUrl}/results/${result.id}/opengraph-image`],
-    },
   };
 }
 
