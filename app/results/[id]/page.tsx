@@ -63,7 +63,7 @@ export async function generateMetadata({
 
   const suspicionLevel = getSuspicionLevel(result.analysis.suspicionScore);
   const baseUrl =
-    process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL || "http://localhost:3000";
 
   return {
     title: `${result.repository.full_name} - StarBuster Analysis`,
