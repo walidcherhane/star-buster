@@ -6,8 +6,18 @@ import ShareButton from "@/components/ui/share-button";
 
 interface AnalysisResult {
   id: string;
-  repository: any;
-  analysis: any;
+  repository: {
+    full_name: string;
+    stargazers_count: number;
+    language: string | null;
+    forks_count: number;
+    created_at: string;
+  };
+  analysis: {
+    suspicionScore: number;
+    analyzedSample: number;
+    suspicionIndicators?: string[];
+  };
   createdAt: string;
 }
 
@@ -131,21 +141,24 @@ export default async function ResultsPage({
         </div>
 
         {/* Indicators */}
-        {result.analysis.suspicionIndicators?.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">Suspicion Indicators</h3>
-            <ul className="space-y-2">
-              {result.analysis.suspicionIndicators.map(
-                (indicator: string, index: number) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-red-500 mr-2">⚠️</span>
-                    <span>{indicator}</span>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-        )}
+        {result.analysis.suspicionIndicators &&
+          result.analysis.suspicionIndicators.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">
+                Suspicion Indicators
+              </h3>
+              <ul className="space-y-2">
+                {result.analysis.suspicionIndicators.map(
+                  (indicator: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-red-500 mr-2">⚠️</span>
+                      <span>{indicator}</span>
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
 
         {/* Repository Info */}
         <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
