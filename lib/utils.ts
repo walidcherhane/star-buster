@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { AdvancedPatterns, BasicPatterns, SuspiciousTimeWindow } from "./types";
 import { CheckCircle, AlertTriangle, AlertCircle } from "lucide-react";
+import { BasicPatterns, AdvancedPatterns } from "@/types/supabase-schema";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
