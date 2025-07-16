@@ -2,7 +2,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import ShareButton from "@/components/ui/share-button";
 import {
   Activity,
   AlertTriangle,
@@ -566,13 +565,6 @@ export default async function ResultsPage({
                 genuine popularity spikes.
               </AlertDescription>
             </Alert>
-            {/* Reset Button */}
-            <div className="text-center pt-4">
-              <Button onClick={() => {}} variant="outline">
-                <Search className="h-4 w-4 mr-2" />
-                Analyze Another Repository
-              </Button>
-            </div>
           </div>
         </div>
       </div>
