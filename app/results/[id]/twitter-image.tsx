@@ -1,3 +1,4 @@
+// app/results/[id]/twitter-image.tsx
 import { ImageResponse } from "next/og";
 import { createClient } from "@/utils/supabase/server";
 
@@ -24,6 +25,7 @@ async function getAnalysisResult(id: string) {
   return {
     repository: data.repository_data,
     analysis: data.analysis_data,
+    createdAt: data.created_at,
   };
 }
 
@@ -46,9 +48,10 @@ export default async function TwitterImage({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "#000000",
-            color: "white",
+            backgroundColor: "#f8fafc",
+            color: "#1e293b",
             fontSize: 32,
+            fontWeight: 600,
           }}
         >
           Analysis Not Found
@@ -59,11 +62,9 @@ export default async function TwitterImage({
   }
 
   const getSuspicionLevel = (score: number) => {
-    if (score >= 70)
-      return { level: "High Risk", color: "#ef4444", emoji: "🚨" };
-    if (score >= 40)
-      return { level: "Medium Risk", color: "#f59e0b", emoji: "⚠️" };
-    return { level: "Low Risk", color: "#10b981", emoji: "✅" };
+    if (score >= 70) return { level: "High Risk", color: "#dc2626" };
+    if (score >= 40) return { level: "Medium Risk", color: "#d97706" };
+    return { level: "Low Risk", color: "#059669" };
   };
 
   const suspicion = getSuspicionLevel(result.analysis.suspicionScore);
@@ -76,126 +77,131 @@ export default async function TwitterImage({
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%)",
-          color: "white",
-          fontFamily: "system-ui",
+          justifyContent: "space-between",
+          backgroundColor: "#ffffff",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          padding: "40px",
+          borderRadius: "16px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
         }}
       >
         <div
           style={{
+            fontSize: "32px",
+            fontWeight: 700,
+            color: "#1e293b",
+            marginBottom: "80px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          Github Stars Analysis Report
+        </div>
+
+        {/* Top Row: Repo Name and Share Button */}
+        <div
+          style={{
             display: "flex",
             flexDirection: "column",
+            alignItems: "flex-start",
+            marginBottom: "32px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "22px",
+              fontWeight: 700,
+              color: "#1e293b",
+              marginBottom: "10px",
+            }}
+          >
+            {result.repository.full_name}
+          </div>
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: 200,
+              color: "#64748b",
+            }}
+          >
+            {result.repository.description || "No description available"}
+          </div>
+        </div>
+
+        {/* Score Section */}
+        <div
+          style={{
+            display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
-            borderRadius: "20px",
-            padding: "40px",
-            width: "90%",
-            height: "80%",
+            justifyContent: "space-between",
+            marginBottom: "32px",
           }}
         >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              marginBottom: "20px",
+              flexDirection: "column",
             }}
           >
             <div
               style={{
-                fontSize: "28px",
-                fontWeight: "bold",
-                marginRight: "15px",
+                fontSize: "48px",
+                fontWeight: 700,
+                color: "#1e293b",
+                marginBottom: "4px",
               }}
             >
-              ⭐ StarBuster
+              {result.analysis.suspicionScore}/100
             </div>
             <div
               style={{
-                fontSize: "20px",
-                opacity: 0.8,
+                fontSize: "24px",
+                fontWeight: 600,
+                color: suspicion.color,
               }}
             >
-              Fake Star Detection
+              {suspicion.level}
             </div>
           </div>
-
-          {/* Repository Name  */}
-          <div
-            style={{
-              fontSize: "32px",
-              fontWeight: "bold",
-              marginBottom: "15px",
-              textAlign: "center",
-              maxWidth: "100%",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {result.repository.full_name}
-          </div>
-
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "20px",
-              gap: "20px",
-            }}
-          >
-            <div style={{ fontSize: "48px" }}>{suspicion.emoji}</div>
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontSize: "64px",
-                  fontWeight: "bold",
-                  color: suspicion.color,
-                }}
-              >
-                {result.analysis.suspicionScore}/100
-              </div>
-              <div
-                style={{
-                  fontSize: "20px",
-                  color: suspicion.color,
-                  fontWeight: "600",
-                }}
-              >
-                {suspicion.level}
-              </div>
-            </div>
-          </div>
-
-          {/* Compact Stats */}
-          <div
-            style={{
-              display: "flex",
-              gap: "30px",
+              flexDirection: "column",
+              alignItems: "flex-end",
               fontSize: "16px",
-              opacity: 0.9,
+              color: "#64748b",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>⭐</span>
               <span>
-                {result.repository.stargazers_count?.toLocaleString()}
+                {result.repository.stargazers_count?.toLocaleString()} stars
               </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>🔍</span>
               <span>{result.analysis.analyzedSample} analyzed</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>📊</span>
-              <span>
-                {result.analysis.detailedSample > 0 ? "Advanced" : "Basic"}
-              </span>
-            </div>
           </div>
+        </div>
+
+        {/* Bottom Grid */}
+        <div
+          style={{
+            display: "flex",
+            gap: "24px",
+            fontSize: "16px",
+            color: "#64748b",
+          }}
+        >
+          <div>Language: {result.repository.language || "N/A"}</div>
+          <div>Forks: {result.repository.forks_count?.toLocaleString()}</div>
+          <div>
+            Created:{" "}
+            {new Date(result.repository.created_at).toLocaleDateString()}
+          </div>
+          <div>Analysis: {new Date(result.createdAt).toLocaleDateString()}</div>
         </div>
       </div>
     ),

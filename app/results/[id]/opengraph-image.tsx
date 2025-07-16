@@ -25,6 +25,7 @@ async function getAnalysisResult(id: string) {
   return {
     repository: data.repository_data,
     analysis: data.analysis_data,
+    createdAt: data.created_at,
   };
 }
 
@@ -47,9 +48,10 @@ export default async function Image({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "#1f2937",
-            color: "white",
+            backgroundColor: "#f8fafc",
+            color: "#1e293b",
             fontSize: 32,
+            fontWeight: 600,
           }}
         >
           Analysis Not Found
@@ -75,116 +77,131 @@ export default async function Image({
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
-          fontFamily: "system-ui",
+          justifyContent: "space-between",
+          backgroundColor: "#ffffff",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          padding: "40px",
+          borderRadius: "16px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
         }}
       >
         <div
           style={{
+            fontSize: "32px",
+            fontWeight: 700,
+            color: "#1e293b",
+            marginBottom: "80px",
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "20px",
-            padding: "40px",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            width: "90%",
-            height: "80%",
           }}
         >
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "30px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "32px",
-                fontWeight: "bold",
-                marginRight: "20px",
-              }}
-            >
-              ⭐ StarBuster
-            </div>
-          </div>
+          Github Stars Analysis Report
+        </div>
 
-          {/* Repository Name */}
+        {/* Top Row: Repo Name and Share Button */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            marginBottom: "32px",
+          }}
+        >
           <div
             style={{
-              fontSize: "36px",
-              fontWeight: "bold",
-              marginBottom: "20px",
-              textAlign: "center",
+              fontSize: "22px",
+              fontWeight: 700,
+              color: "#1e293b",
+              marginBottom: "10px",
             }}
           >
             {result.repository.full_name}
           </div>
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: 200,
+              color: "#64748b",
+            }}
+          >
+            {result.repository.description || "No description available"}
+          </div>
+        </div>
 
-          {/* Score */}
+        {/* Score Section */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "32px",
+          }}
+        >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "30px",
+              flexDirection: "column",
             }}
           >
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontSize: "72px",
-                  fontWeight: "bold",
-                  color: suspicion.color,
-                }}
-              >
-                {result.analysis.suspicionScore}/100
-              </div>
-              <div
-                style={{
-                  fontSize: "24px",
-                  color: suspicion.color,
-                  fontWeight: "600",
-                }}
-              >
-                {suspicion.level}
-              </div>
+            <div
+              style={{
+                fontSize: "48px",
+                fontWeight: 700,
+                color: "#1e293b",
+                marginBottom: "4px",
+              }}
+            >
+              {result.analysis.suspicionScore}/100
+            </div>
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: 600,
+                color: suspicion.color,
+              }}
+            >
+              {suspicion.level}
             </div>
           </div>
-
-          {/* Stats */}
           <div
             style={{
               display: "flex",
-              gap: "40px",
-              fontSize: "18px",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              fontSize: "16px",
+              color: "#64748b",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>⭐</span>
               <span>
                 {result.repository.stargazers_count?.toLocaleString()} stars
               </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>🔍</span>
               <span>{result.analysis.analyzedSample} analyzed</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>📊</span>
-              <span>
-                {result.analysis.detailedSample > 0 ? "Advanced" : "Basic"}{" "}
-                Analysis
-              </span>
-            </div>
           </div>
+        </div>
+
+        {/* Bottom Grid */}
+        <div
+          style={{
+            display: "flex",
+            gap: "24px",
+            fontSize: "16px",
+            color: "#64748b",
+          }}
+        >
+          <div>Language: {result.repository.language || "N/A"}</div>
+          <div>Forks: {result.repository.forks_count?.toLocaleString()}</div>
+          <div>
+            Created:{" "}
+            {new Date(result.repository.created_at).toLocaleDateString()}
+          </div>
+          <div>Analysis: {new Date(result.createdAt).toLocaleDateString()}</div>
         </div>
       </div>
     ),
