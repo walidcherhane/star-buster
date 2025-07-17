@@ -1,27 +1,18 @@
-// app/results/[id]/page.tsx
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import {
-  Activity,
   AlertTriangle,
   Calendar,
-  Clock,
   Code,
   Eye,
-  FileText,
   GitFork,
   Github,
-  Globe,
-  Mail,
-  Search,
-  Share,
   Star,
   TrendingUp,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,

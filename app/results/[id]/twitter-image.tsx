@@ -1,9 +1,6 @@
-// app/results/[id]/twitter-image.tsx
 import { ImageResponse } from "next/og";
 import { createClient } from "@/utils/supabase/server";
 
-export const runtime = "edge";
-export const alt = "StarBuster Analysis Results";
 export const size = {
   width: 1200,
   height: 630,
