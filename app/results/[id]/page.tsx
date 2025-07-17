@@ -80,6 +80,7 @@ export async function generateMetadata({
   const suspicionLevel = getSuspicionLevel(result.suspicion_score);
 
   return {
+    metadataBase: new URL(`https://${process.env.NEXT_PUBLIC_VERCEL_URL}`),
     title: `${result.repo_name} - StarBuster Analysis`,
     description: `Suspicion Score: ${result.suspicion_score}/100 | ${suspicionLevel}`,
   };
