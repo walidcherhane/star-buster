@@ -40,7 +40,6 @@ export interface AdvancedPatterns extends BasicPatterns {
   newAccounts: number;
   noRepos: number;
   noEmail: number;
-  noBio: number;
   lowEngagement: number;
   sameDayPattern: number;
   coordinated: number;

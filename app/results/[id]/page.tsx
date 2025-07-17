@@ -395,22 +395,6 @@ export default async function ResultsPage({
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b">
-                        <span className="flex items-center gap-1">No Bio</span>
-                        <div className="text-right">
-                          <div className="font-medium">
-                            {result.analysis_data?.patterns.noBio}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {(
-                              (result.analysis_data?.patterns.noBio /
-                                result.analyzed_sample) *
-                              100
-                            ).toFixed(1)}
-                            %
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b">
                         <div className="flex flex-col">
                           <span className="flex items-center gap-1">
                             Low Engagement
