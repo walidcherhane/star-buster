@@ -2,35 +2,27 @@
 
 import { useState } from "react";
 import { Button } from "./button";
+import { Copy } from "lucide-react";
 
 export default function ShareButton() {
   const [copied, setCopied] = useState(false);
 
-  const handleShare = async () => {
+  const handleCopy = async () => {
     const url = window.location.href;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: document.title,
-          url: url,
-        });
-      } catch (error) {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <Button onClick={handleShare} variant="outline" size="sm">
-      {copied ? "Copied!" : "Share Results"}
+    <Button
+      onClick={handleCopy}
+      variant="outline"
+      size="sm"
+      className="cursor-pointer"
+    >
+      <Copy className="h-4 w-4" />
+      {copied ? "Copied!" : "Copy Link"}
     </Button>
   );
 }

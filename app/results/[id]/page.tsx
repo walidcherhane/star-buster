@@ -30,6 +30,7 @@ import {
   getSuspiciousCreationsCount,
 } from "@/lib/utils";
 import { AnalysisResultsRow } from "@/types/supabase-schema";
+import ShareButton from "@/components/ui/share-button";
 
 async function getAnalysisResult(
   id: string
@@ -108,9 +109,12 @@ export default async function ResultsPage({
               <Github className="h-6 w-6" />
               <h1 className="text-2xl font-bold">StarBuster Analysis Report</h1>
             </div>
-            <Badge variant="outline" className="ml-2">
-              {result.analysis_type === "basic" ? "Basic" : "Advanced"} Mode
-            </Badge>
+            <div className="flex flex-col items-center justify-center gap-3 mb-4">
+              <Badge variant="outline" className="ml-2">
+                {result.analysis_type === "basic" ? "Basic" : "Advanced"} Mode
+              </Badge>
+              <ShareButton />
+            </div>
           </div>
           <div className="space-y-6">
             {/* Repository Overview */}
