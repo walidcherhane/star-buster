@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { CheckCircle, AlertTriangle, AlertCircle } from "lucide-react";
-import { BasicPatterns, AdvancedPatterns } from "@/types/supabase-schema";
+import { AdvancedPatterns, BasicPatterns } from "@/types/supabase-schema";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -77,14 +77,92 @@ export const getSuspicionLevel = (
   }
 };
 
-export const getSuspiciousCreationsCount = (
+// export const getSuspiciousCreationsCount = (
+//   suspiciousCreationDates: Record<string, number>
+// ): number => {
+//   return Object.values(suspiciousCreationDates).reduce(
+//     (sum, count) => sum + count,
+//     0
+//   );
+// };
+
+// Utility function to analyze suspicious creation dates
+export function getSuspiciousCreationsCount(
   suspiciousCreationDates: Record<string, number>
-): number => {
-  return Object.values(suspiciousCreationDates).reduce(
-    (sum, count) => sum + count,
-    0
-  );
-};
+) {
+  // Sort dates by number of accounts created
+  const sortedDates = Object.entries(suspiciousCreationDates)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Get statistics
+  const maxInOneDay = Math.max(...Object.values(suspiciousCreationDates), 0);
+  const daysWithMoreThan5 = sortedDates.filter(
+    (entry) => entry.count > 5
+  ).length;
+  const daysWithMoreThan10 = sortedDates.filter(
+    (entry) => entry.count > 10
+  ).length;
+
+  // Get top suspicious days (days with more than 3 accounts)
+  const suspiciousDays = sortedDates
+    .filter((entry) => entry.count > 3)
+    .map((entry) => ({
+      date: entry.date,
+      count: entry.count,
+      severity: entry.count > 10 ? "High" : entry.count > 5 ? "Medium" : "Low",
+    }));
+
+  return {
+    statistics: {
+      maxAccountsInOneDay: maxInOneDay,
+      daysWithMoreThan5Accounts: daysWithMoreThan5,
+      daysWithMoreThan10Accounts: daysWithMoreThan10,
+      totalSuspiciousDays: suspiciousDays.length,
+    },
+    suspiciousDays,
+    hasSuspiciousPattern: maxInOneDay > 5,
+    summary: generateSummary(maxInOneDay, daysWithMoreThan5, suspiciousDays),
+  };
+}
+
+// Helper function to generate a human-readable summary
+function generateSummary(
+  maxInOneDay: number,
+  daysWithMoreThan5: number,
+  suspiciousDays: {
+    date: string;
+    count: number;
+    severity: string;
+  }[]
+) {
+  const summaryParts = [];
+
+  if (maxInOneDay > 10) {
+    summaryParts.push(
+      `Critical: ${maxInOneDay} accounts created in a single day`
+    );
+  } else if (maxInOneDay > 5) {
+    summaryParts.push(
+      `Warning: ${maxInOneDay} accounts created in a single day`
+    );
+  }
+
+  if (daysWithMoreThan5 > 1) {
+    summaryParts.push(
+      `${daysWithMoreThan5} days had more than 5 accounts created`
+    );
+  }
+
+  if (suspiciousDays.length > 0) {
+    const topDay = suspiciousDays[0];
+    summaryParts.push(
+      `Most active day: ${topDay.date} with ${topDay.count} accounts`
+    );
+  }
+
+  return summaryParts.join(". ");
+}
 
 export const isAdvancedPatterns = (
   patterns: BasicPatterns | AdvancedPatterns

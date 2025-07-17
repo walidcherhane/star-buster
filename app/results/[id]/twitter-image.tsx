@@ -99,7 +99,7 @@ export default async function TwitterImage({
           Github Stars Analysis Report
         </div>
 
-        {/* Top Row: Repo Name and Share Button */}
+        {/* Top Row: Repo Name and Description */}
         <div
           style={{
             display: "flex",
@@ -129,7 +129,7 @@ export default async function TwitterImage({
           </div>
         </div>
 
-        {/* Score Section */}
+        {/* Score Section: Suspicion Score and Stars */}
         <div
           style={{
             display: "flex",
@@ -186,7 +186,7 @@ export default async function TwitterImage({
           </div>
         </div>
 
-        {/* Bottom Grid */}
+        {/* Bottom Grid: Language, Forks, Created, and Analysis */}
         <div
           style={{
             display: "flex",

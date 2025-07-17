@@ -31,6 +31,8 @@ export interface Repository {
 export interface BasicPatterns {
   genericUsernames: number;
   botLikeNames: number;
+  botLikeNamesList: string[];
+  genericUsernamesList: string[];
   suspiciousCreationDates: Record<string, number>;
 }
 
@@ -39,7 +41,6 @@ export interface AdvancedPatterns extends BasicPatterns {
   noRepos: number;
   noEmail: number;
   noBio: number;
-  noBlog: number;
   lowEngagement: number;
   sameDayPattern: number;
   coordinated: number;

@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Github, Search, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Github,
+  Search,
+  Settings,
+  LoaderIcon,
+  Star,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,19 +18,42 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import { validateGitHubUrl } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { AnalysisResponse } from "@/types";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const loadingMessages = [
+  "Analyzing repository...",
+  "This may take a few minutes...",
+  "Please don't refresh the page...",
+];
 
 export default function StarBusterLanding() {
   const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [advancedMode, setAdvancedMode] = useState(false);
   const [maxStars, setMaxStars] = useState(500);
   const [maxUsers, setMaxUsers] = useState(1000);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setCurrentMessageIndex((prev) =>
+          prev < loadingMessages.length - 1 ? prev + 1 : prev
+        );
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleAnalyze = async () => {
     if (!url.trim()) {
@@ -36,25 +66,64 @@ export default function StarBusterLanding() {
       );
       return;
     }
-    if (advancedMode && (maxStars < 100 || maxStars > 10000)) {
-      setError("Max stars must be between 100 and 10,000");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    // Pass params to /results page
-    const params = new URLSearchParams({
-      url,
-      advanced: advancedMode ? "1" : "0",
-      maxStars: String(maxStars),
-      maxUsers: String(maxUsers),
-    });
-    router.push(`/results?${params.toString()}`);
-  };
 
-  const handleRetry = () => {
+    setIsLoading(true);
     setError("");
-    handleAnalyze();
+
+    try {
+      const response = await fetch(`${API_URL}/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          repoUrl: url,
+          deepAnalysis: advancedMode,
+          maxStars,
+          maxUsers,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to analyze repository");
+      }
+
+      const analysisResult: AnalysisResponse = await response.json();
+      router.push(`/results/${analysisResult.id}`);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+
+      if (errorMessage.includes("400") || errorMessage.includes("Invalid")) {
+        setError(
+          "Invalid GitHub repository URL. Please check the URL and try again."
+        );
+      } else if (
+        errorMessage.includes("404") ||
+        errorMessage.includes("not found")
+      ) {
+        setError(
+          "Repository not found. Please verify the repository exists and is public."
+        );
+      } else if (
+        errorMessage.includes("500") ||
+        errorMessage.includes("Internal")
+      ) {
+        setError("Server error occurred. Please try again in a few moments.");
+      } else if (
+        errorMessage.includes("Network") ||
+        errorMessage.includes("fetch")
+      ) {
+        setError(
+          "Network connection error. Please check your internet connection and try again."
+        );
+      } else {
+        setError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -90,14 +159,16 @@ export default function StarBusterLanding() {
                     placeholder="https://github.com/owner/repository"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    disabled={loading}
-                    className="text-center "
+                    disabled={isLoading}
+                    className="text-center"
                     onKeyDown={(e) =>
-                      e.key === "Enter" && !loading && handleAnalyze()
+                      e.key === "Enter" && !isLoading && handleAnalyze()
                     }
                   />
                   {error && (
-                    <p className="text-red-500 text-sm text-center">{error}</p>
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                   )}
                 </div>
                 <div className="flex items-center justify-center space-x-2 py-2">
@@ -108,7 +179,7 @@ export default function StarBusterLanding() {
                     id="advanced-mode"
                     checked={advancedMode}
                     onCheckedChange={setAdvancedMode}
-                    disabled={loading}
+                    disabled={isLoading}
                   />
                   <Label
                     htmlFor="advanced-mode"
@@ -124,7 +195,7 @@ export default function StarBusterLanding() {
                         htmlFor="max-users"
                         className="text-sm flex items-center gap-1"
                       >
-                        <Settings className="h-3 w-3" />
+                        <Users className="h-3 w-3" />
                         Max Users to Analyze
                       </Label>
                       <Input
@@ -136,19 +207,16 @@ export default function StarBusterLanding() {
                         onChange={(e) =>
                           setMaxUsers(Number.parseInt(e.target.value) || 1000)
                         }
-                        disabled={loading}
+                        disabled={isLoading}
                         className="text-center"
                       />
-                      <p className="text-xs text-muted-foreground text-center">
-                        Higher values provide more accuracy but take longer
-                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label
                         htmlFor="max-stars"
                         className="text-sm flex items-center gap-1"
                       >
-                        <Settings className="h-3 w-3" />
+                        <Star className="h-3 w-3" />
                         Max Stars to Analyze
                       </Label>
                       <Input
@@ -160,13 +228,9 @@ export default function StarBusterLanding() {
                         onChange={(e) =>
                           setMaxStars(Number.parseInt(e.target.value) || 500)
                         }
-                        disabled={loading}
+                        disabled={isLoading}
                         className="text-center"
                       />
-                      <p className="text-xs text-muted-foreground text-center">
-                        Higher values provide more accuracy but take longer
-                        (100-10,000)
-                      </p>
                     </div>
                   </>
                 )}
@@ -174,17 +238,32 @@ export default function StarBusterLanding() {
                   {advancedMode
                     ? "Deep analysis with detailed user profiling (60-120 seconds)"
                     : "Quick analysis with basic pattern detection (30-60 seconds)"}
+                  <br />
+                  {advancedMode && (
+                    <span className="text-xs text-muted-foreground">
+                      Higher values provide more accuracy but take longer
+                    </span>
+                  )}
                 </p>
                 <Button
                   onClick={handleAnalyze}
-                  disabled={loading}
-                  className="w-full"
+                  disabled={isLoading}
+                  className="w-full relative"
                 >
                   <div className="flex items-center gap-2">
-                    <Search className="h-4 w-4" />
-                    {advancedMode
-                      ? `Advanced Analysis (${maxStars} stars)`
-                      : "Basic Analysis"}
+                    {isLoading ? (
+                      <>
+                        <LoaderIcon className="h-4 w-4 animate-spin" />
+                        <span>{loadingMessages[currentMessageIndex]}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4" />
+                        {advancedMode
+                          ? `Advanced Analysis (${maxStars} stars)`
+                          : "Basic Analysis"}
+                      </>
+                    )}
                   </div>
                 </Button>
               </CardContent>

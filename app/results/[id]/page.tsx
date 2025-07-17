@@ -34,8 +34,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   calculateDaysOld,
   calculateStarsPerDay,
+  cn,
   formatNumber,
-  formatProcessingTime,
   getSuspiciousCreationsCount,
 } from "@/lib/utils";
 import { AnalysisResultsRow } from "@/types/supabase-schema";
@@ -115,10 +115,10 @@ export default async function ResultsPage({
             <div className="flex items-center justify-center gap-3 mb-4">
               <Github className="h-6 w-6" />
               <h1 className="text-2xl font-bold">StarBuster Analysis Report</h1>
-              <Badge variant="outline" className="ml-2">
-                {result.analysis_type}
-              </Badge>
             </div>
+            <Badge variant="outline" className="ml-2">
+              {result.analysis_type === "basic" ? "Basic" : "Advanced"} Mode
+            </Badge>
           </div>
           <div className="space-y-6">
             {/* Repository Overview */}
@@ -232,9 +232,29 @@ export default async function ResultsPage({
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-6">
-                  <div className="text-5xl font-bold mb-4">
-                    {result.suspicion_score}
-                    <span className="text-lg text-muted-foreground">/100</span>
+                  <div
+                    className={cn(
+                      "text-5xl font-bold mb-4",
+                      result.suspicion_score >= 70
+                        ? "text-red-600"
+                        : result.suspicion_score >= 40
+                        ? "text-yellow-400"
+                        : "text-green-600"
+                    )}
+                  >
+                    {result.suspicion_score}{" "}
+                    <span
+                      className={cn(
+                        "text-lg",
+                        result.suspicion_score >= 70
+                          ? "text-red-600"
+                          : result.suspicion_score >= 40
+                          ? "text-yellow-400"
+                          : "text-green-600"
+                      )}
+                    >
+                      /100
+                    </span>
                   </div>
                   <Progress value={result.suspicion_score} className="mb-4" />
                   <div
@@ -245,22 +265,6 @@ export default async function ResultsPage({
                     of artificial stars
                   </div>
                 </div>
-                {result.suspicion_indicators !== undefined && (
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-700">
-                        {result.analysis_data.patterns.genericUsernames}
-                      </div>
-                      <div className="text-sm text-green-600">Real Stars</div>
-                    </div>
-                    <div className="text-center p-3 bg-red-50 rounded-lg">
-                      <div className="text-2xl font-bold text-red-700">
-                        {result.analysis_data.patterns.botLikeNames}
-                      </div>
-                      <div className="text-sm text-red-600">Fake Stars</div>
-                    </div>
-                  </div>
-                )}
                 {result.suspicion_indicators?.length > 0 && (
                   <Alert>
                     <AlertTriangle className="h-4 w-4" />
@@ -299,7 +303,15 @@ export default async function ResultsPage({
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b">
-                    <span>Generic Usernames</span>
+                    <span>
+                      Generic Usernames
+                      <br />
+                      <span className="text-xs text-muted-foreground max-w-xs">
+                        {result.analysis_data?.patterns?.genericUsernamesList?.join(
+                          ", "
+                        )}
+                      </span>
+                    </span>
                     <div className="text-right">
                       <div className="font-medium">
                         {result.analysis_data?.patterns.genericUsernames}
@@ -315,7 +327,15 @@ export default async function ResultsPage({
                     </div>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
-                    <span>Bot-like Names</span>
+                    <span>
+                      Bot-like Names
+                      <br />
+                      <span className="text-xs text-muted-foreground max-w-xs">
+                        {result.analysis_data?.patterns?.botLikeNamesList?.join(
+                          ", "
+                        )}
+                      </span>
+                    </span>
                     <div className="text-right">
                       <div className="font-medium">
                         {result.analysis_data?.patterns.botLikeNames}
@@ -331,19 +351,30 @@ export default async function ResultsPage({
                     </div>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
-                    <span>Suspicious Creation Dates</span>
-                    <div className="text-right">
-                      <div className="font-medium">
+                    <div className="flex flex-col">
+                      <span>Suspicious Creation Dates</span>
+                      <p className="text-xs text-muted-foreground">
                         {getSuspiciousCreationsCount(
                           result.analysis_data?.patterns.suspiciousCreationDates
-                        )}
+                        ).summary ||
+                          "If many accounts were created on the same day, it's considered suspicious"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">
+                        {
+                          getSuspiciousCreationsCount(
+                            result.analysis_data?.patterns
+                              .suspiciousCreationDates
+                          ).statistics.totalSuspiciousDays
+                        }
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {(
                           (getSuspiciousCreationsCount(
                             result.analysis_data?.patterns
                               .suspiciousCreationDates
-                          ) /
+                          ).statistics.totalSuspiciousDays /
                             result.analyzed_sample) *
                           100
                         ).toFixed(1)}
@@ -355,7 +386,6 @@ export default async function ResultsPage({
                     <>
                       <div className="flex justify-between items-center py-2 border-b">
                         <span className="flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
                           No Email
                         </span>
                         <div className="text-right">
@@ -373,10 +403,7 @@ export default async function ResultsPage({
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b">
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" />
-                          No Bio
-                        </span>
+                        <span className="flex items-center gap-1">No Bio</span>
                         <div className="text-right">
                           <div className="font-medium">
                             {result.analysis_data?.patterns.noBio}
@@ -392,29 +419,14 @@ export default async function ResultsPage({
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b">
-                        <span className="flex items-center gap-1">
-                          <Globe className="h-3 w-3" />
-                          No Blog
-                        </span>
-                        <div className="text-right">
-                          <div className="font-medium">
-                            {result.analysis_data?.patterns.noBlog}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {(
-                              (result.analysis_data?.patterns.noBlog /
-                                result.analyzed_sample) *
-                              100
-                            ).toFixed(1)}
-                            %
-                          </div>
+                        <div className="flex flex-col">
+                          <span className="flex items-center gap-1">
+                            Low Engagement
+                          </span>
+                          <p className="text-xs text-muted-foreground">
+                            Less than 2 followers AND less than 2 following
+                          </p>
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span className="flex items-center gap-1">
-                          <Activity className="h-3 w-3" />
-                          Low Engagement
-                        </span>
                         <div className="text-right">
                           <div className="font-medium">
                             {result.analysis_data?.patterns.lowEngagement}
@@ -430,7 +442,12 @@ export default async function ResultsPage({
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b">
-                        <span>Coordinated</span>
+                        <div className="flex flex-col">
+                          <span>Coordinated</span>
+                          <p className="text-xs text-muted-foreground">
+                            Multiple accounts starring within same minute
+                          </p>
+                        </div>
                         <div className="text-right">
                           <div className="font-medium">
                             {result.analysis_data?.patterns.coordinated}
@@ -446,7 +463,12 @@ export default async function ResultsPage({
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b">
-                        <span>New Accounts</span>
+                        <div className="flex flex-col">
+                          <span>New Accounts</span>
+                          <p className="text-xs text-muted-foreground">
+                            Accounts created in the last 30 days
+                          </p>
+                        </div>
                         <div className="text-right">
                           <div className="font-medium">
                             {result.analysis_data?.patterns.newAccounts}
@@ -462,7 +484,12 @@ export default async function ResultsPage({
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2">
-                        <span>No Repositories</span>
+                        <div className="flex flex-col">
+                          <span>No Repositories</span>
+                          <p className="text-xs text-muted-foreground">
+                            Accounts with no public repositories
+                          </p>
+                        </div>
                         <div className="text-right">
                           <div className="font-medium">
                             {result.analysis_data?.patterns.noRepos}
@@ -520,22 +547,6 @@ export default async function ResultsPage({
                       </div>
                       <div className="text-sm text-muted-foreground">
                         accounts analyzed
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Processing Time
-                    </span>
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {formatProcessingTime(
-                          new Date(result.created_at).getTime()
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        analysis duration
                       </div>
                     </div>
                   </div>
